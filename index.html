@@ -1,90 +1,97 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Image → Python Turtle Code</title>
+<title>Image → Python Turtle</title>
+
 <style>
 body {
-  font-family: system-ui, sans-serif;
+  font-family: Arial, sans-serif;
   background: #0f1220;
   color: white;
   text-align: center;
-  padding: 30px;
+  padding: 20px;
 }
 .card {
   max-width: 700px;
   margin: auto;
   background: #151935;
   padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.4);
+  border-radius: 12px;
 }
-input { margin: 10px; }
-canvas { display: none; }
 textarea {
   width: 100%;
   height: 300px;
-  background: #0b0e1a;
+  background: #000;
   color: #00ffcc;
-  border-radius: 10px;
-  padding: 10px;
+  margin-top: 10px;
 }
 button {
   padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(135deg,#6a5cff,#00ffd5);
-  font-weight: bold;
-  cursor: pointer;
+  margin-top: 10px;
 }
 </style>
 </head>
-<body><div class="card">
-  <h1>Image → Python Turtle Converter</h1>
-  <p>Upload an image and get basic Turtle drawing code</p>
+<body>
+
+<div class="card">
+  <h2>Image → Python Turtle Converter</h2>
   <input type="file" id="imgInput" accept="image/*"><br>
-  <button onclick="generateCode()">Generate Turtle Code</button><canvas id="canvas"></canvas>
-
-  <h3>Generated Python Code</h3>
+  <button onclick="generateCode()">Generate Code</button>
+  <canvas id="canvas" style="display:none;"></canvas>
   <textarea id="output"></textarea>
-</div><script>
-let img = new Image();
+</div>
 
-imgInput.onchange = e => {
+<script>
+let img = new Image();
+let loaded = false;
+
+document.getElementById("imgInput").addEventListener("change", function(e) {
   const file = e.target.files[0];
   const reader = new FileReader();
-  reader.onload = ev => img.src = ev.target.result;
+  reader.onload = function(ev) {
+    img.onload = () => loaded = true;
+    img.src = ev.target.result;
+  };
   reader.readAsDataURL(file);
-};
+});
 
 function generateCode() {
+  if (!loaded) {
+    alert("Upload image first!");
+    return;
+  }
+
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
-  canvas.width = 80;
-  canvas.height = 80;
-  ctx.drawImage(img, 0, 0, 80, 80);
+  canvas.width = 60;
+  canvas.height = 60;
+  ctx.drawImage(img, 0, 0, 60, 60);
 
-  const data = ctx.getImageData(0,0,80,80).data;
+  const data = ctx.getImageData(0,0,60,60).data;
 
-  let code = `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nt.penup()\n`;
+  let code = `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nt.hideturtle()\nt.penup()\n`;
 
-  for (let y=0; y<80; y+=4) {
-    for (let x=0; x<80; x+=4) {
-      const i = (y*80 + x)*4;
+  for (let y=0; y<60; y+=3) {
+    for (let x=0; x<60; x+=3) {
+      const i = (y*60 + x)*4;
       const r = data[i];
       const g = data[i+1];
       const b = data[i+2];
-      const brightness = (r+g+b)/3;
+      const bright = (r+g+b)/3;
 
-      if (brightness < 150) {
-        code += `t.goto(${x-40}, ${40-y})\nt.dot(4)\n`;
+      if (bright < 160) {
+        code += `t.goto(${x-30}, ${30-y})\nt.dot(3)\n`;
       }
     }
   }
 
-  code += `\nturtle.done()`;
-  output.value = code;
+  code += `turtle.done()`;
+  document.getElementById("output").value = code;
 }
-</script></body>
+</script>
+
+</body>
 </html>
